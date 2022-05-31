@@ -1,0 +1,13 @@
+tbl_lhi revisi status 0
+current + aksi 0
+
+approve
+atasan langsung -> current 0 action 2 -> level approval 1
+
+current 1 action 1 -> level approval 2
+
+approve
+atasan dari atasan langsung
+
+current 0 action 2 -> level approval 2 
+

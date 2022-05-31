@@ -1,0 +1,12 @@
+function update data CI
+
+if($_POST['Status'] == 3){
+	$ID = $data_curr[0]['IDLHI'];
+	$status ['STATUS']= $_POST['Status'];
+
+	$in_kra = $this->de->update_data('TBL_LHI',$status , $ID);
+	   }
+		   
+	$return_arr[] = array("status" => "sukses ubah data");
+
+	return json_encode($return_arr);

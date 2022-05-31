@@ -1,0 +1,28 @@
+total kerugian
+total pengembalian
+
+plagging unit kerja 
+
+admin yg hanya bisa adj sanksi
+setelah di approve 
+
+routing slip, 
+jika ada reject balik kesebelumnya, roll back
+
+jumlah kerugian - diagram batang
+kasus & sanksi - diagram pie
+
+Update kerugian
+setelah semua approve pada kpp
+maka yg akan bisa diedit -> 
+		jumlah pengembalian
+
+tetapi, di memo tetap tampil keduanya
+
+
+Dashboard ->
+
+menambahkan tools update 
+report kpp -> tambah tool untuk lihat data yg sudah diapprove
+
+

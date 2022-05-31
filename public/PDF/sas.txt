@@ -1,0 +1,30 @@
+SELECT
+	a.TanggalPencairan,
+	--a.OutStandingPrincipal
+	SUM ( a.OSPokok ) 
+	--/1000000000
+FROM
+	m_PNM_DW_BRNet_LastGet_DW_202103_Final a 
+	
+	
+	
+WHERE
+	a.TanggalPencairan between '20191201'and GETDATE()
+--	dateadd(day,-45,GETDATE())
+	AND a.Status= 'A' 
+	AND a.HariMenunggak< 30
+	--AND a.term=50
+	--and a.TanggalJatuhTempo>GETDATE()
+	and a.NoKTP!=''
+	and a.Nama !=''
+	and a.OSPokok>0
+	and left(a.Produk,1)!='W'
+	--and a.TanggalOps> dateadd(day,-5,GETDATE())
+	and ISNUMERIC(a.NoKTP)=1 and LEN(a.NoKTP)=16
+	and (a.JangkaWaktu-((a.OSPokok/a.Plafond)*a.JangkaWaktu))>=1
+	
+and not exists (select loanid from INISEMENTARA.[dbo].m_cessie WHERE loanid=a.LoanId COLLATE DATABASE_DEFAULT 
+--and BatchLogId!=99 
+)	
+and  not exists (select OurBranchID from INISEMENTARA.[dbo].m_sharia_convert WHERE OurBranchID=a.CabangId COLLATE DATABASE_DEFAULT)	
+GROUP BY a.TanggalPencairan ORDER BY	a.TanggalPencairan ASC

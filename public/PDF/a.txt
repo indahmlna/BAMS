@@ -1,0 +1,137 @@
+tambah ke m_cessie_penarikan 
+
+-------------------------------
+cari angka
+--------------------------------
+SELECT
+	a.TanggalPencairan,
+	--a.OutStandingPrincipal
+	SUM ( a.OSPokok ) 
+	--/1000000000
+FROM
+	m_PNM_DW_BRNet_LastGet_DW_202104_Final a 
+	
+	
+	
+WHERE
+	a.TanggalPencairan between '20191201'and GETDATE()
+--	dateadd(day,-45,GETDATE())
+	AND a.Status= 'A' 
+	AND a.HariMenunggak< 30
+	--AND a.term=50
+	--and a.TanggalJatuhTempo>GETDATE()
+	and a.NoKTP!=''
+	and a.Nama !=''
+	and a.OSPokok>0
+	and left(a.Produk,1)!='W'
+	--and a.TanggalOps> dateadd(day,-5,GETDATE())
+	and ISNUMERIC(a.NoKTP)=1 and LEN(a.NoKTP)=16
+	and (a.JangkaWaktu-((a.OSPokok/a.Plafond)*a.JangkaWaktu))>=1
+	
+and not exists (select loanid from INISEMENTARA.[dbo].m_cessie WHERE loanid=a.LoanId COLLATE DATABASE_DEFAULT 
+--and BatchLogId!=99 
+)	
+and  not exists (select OurBranchID from INISEMENTARA.[dbo].m_sharia_convert WHERE OurBranchID=a.CabangId COLLATE DATABASE_DEFAULT)	
+GROUP BY a.TanggalPencairan ORDER BY	a.TanggalPencairan ASC
+
+--------------------------------
+
+--INSERT INTO INISEMENTARA.[dbo].m_cessie (
+--	Id,
+--	Bank,
+--	TanggalTarik,
+--	CabangId,
+--	NasabahId,
+--	LoanId,
+--	Siklus,
+--	TanggalPencairan,
+--	BatchLogId,
+--	os,
+--	loaniddisb,
+--	keterangan
+--)
+-- SELECT
+--	CAST (a.NasabahId AS VARCHAR(50)) + CONVERT (
+--		VARCHAR (8),
+--		a.TanggalPencairan,
+--		112
+--	) AS Id,
+--	'7' AS Bank, 
+--	CONVERT(date, getdate()) AS TanggalTarik,
+--	a.CabangId AS CabangId,
+--	a.NasabahId AS NasabahId,
+--	a.LoanId AS LoanId,
+--	a.Siklus AS Siklus,
+--	a.TanggalPencairan AS TanggalPencairan,
+--	'2' AS BatchLogId,
+--	a.OSPokok AS os,
+--	CAST (a.LoanId AS VARCHAR(50)) + CONVERT (
+--		VARCHAR (8),
+--		a.TanggalPencairan,
+--		112
+--	) AS loaniddisb,
+--	'152' --ini di ganti keterangan deskripsi penarikan
+--FROM
+--	m_PNM_DW_BRNet_LastGet_DW_202104_Final a 
+	
+	
+	
+--WHERE
+--	a.TanggalPencairan between '20201110'and '20210211'
+----	dateadd(day,-45,GETDATE())
+--	AND a.Status= 'A' 
+--	AND a.HariMenunggak< 30
+--	--AND a.term=50
+--	--and a.TanggalJatuhTempo>GETDATE()
+--	and a.NoKTP!=''
+--	and a.Nama !=''
+--	and left(a.Produk,1)!='W'
+--	--and a.TanggalOps> dateadd(day,-5,GETDATE())
+--	and ISNUMERIC(a.NoKTP)=1 and LEN(a.NoKTP)=16
+--	and (a.JangkaWaktu-((a.OSPokok/a.Plafond)*a.JangkaWaktu))>=1
+	
+--and not exists (select loanid from INISEMENTARA.[dbo].m_cessie WHERE loanid=a.LoanId COLLATE DATABASE_DEFAULT 
+----and BatchLogId!=99 
+--)	
+--and not exists (select OurBranchID from INISEMENTARA.[dbo].m_sharia_convert WHERE OurBranchID=a.CabangId COLLATE DATABASE_DEFAULT
+----------------------------
+----------------------------
+
+report
+---------------------------
+
+SELECT 
+ a.Cabang AS cabang,
+	a.Nama AS debitur,
+	a.NoKTP AS nik,
+	CAST (
+	a.loanid AS VARCHAR ( 50 )) + CONVERT ( VARCHAR ( 8 ), a.TanggalPencairan, 112 ) as no_akad,
+  CONVERT(date, a.TanggalPencairan) AS tanggal_akad,
+	a.Plafond as jumlah_pembiayaan,
+	a.OSPokok AS outstanding_pembiayaan,
+	
+	cast((a.Plafond/a.JangkaWaktu) as bigint) as angsuran,
+	'W' as periode_angsuran,
+	a.JangkaWaktu AS JangkaWaktu,
+	CONVERT(date,a.TanggalJatuhTempo) as tanggal_jatuh_tempo,
+	'Lancar' as Kolektabilitas
+	--sum(b.OutStandingPrincipal) AS outstanding_pembiayaan
+FROM
+	m_PNM_DW_BRNet_LastGet_DW_202104_Final a  inner join
+	m_cessie b on a.LoanId=b.LoanId COLLATE DATABASE_DEFAULT
+WHERE
+	b.bank='7'
+	and b.keterangan = '152'
+	and b.os>0
+	and a.OSPokok>0
+	and a.Status='A'
+	and a.HariMenunggak< 30
+	and a.Nama!=''
+	and a.NoKTP!=''
+	and ISNUMERIC(a.NoKTP)=1 and LEN(a.NoKTP)=16
+	--and a.TanggalJatuhTempo>= CONVERT(varchar,dateadd(d,-(day(getdate()-1)),getdate()),112)
+	--and a.TanggalOps>= dateadd(day,-5,GETDATE())
+	and (a.JangkaWaktu-((a.OSPokok/a.Plafond)*a.JangkaWaktu))>=1
+	
+ORDER BY	a.Cabang ASC
+

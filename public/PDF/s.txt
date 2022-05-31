@@ -1,0 +1,38 @@
+Report PIP Fidusia
+
+SELECT 
+	a.NoKTP AS NIK,
+	a.Nama AS 'Nama Debitur',
+	CAST (
+	a.loanid AS VARCHAR ( 50 )) + CONVERT ( VARCHAR ( 8 ), a.TanggalPencairan, 112 ) as 'No Akad',
+	'3171' as 'Kode Wilayah',
+	CONVERT(date, a.TanggalPencairan) AS 'Tanggal Akad',
+	CONVERT(date,a.TanggalJatuhTempo) as 'Tanggal Jatuh Tempo',
+	'Mingguan' as 'Pola Angsuran',
+	a.JangkaWaktu AS 'Jangka Waktu',
+	a.Plafond as 'Jumlah Pembiayaan',
+	(a.Plafond/a.JangkaWaktu)as 'Jumlah Angsuran',
+	a.OSPokok AS 'Outstanding',
+	a.Cabang AS Cabang
+	--'W' as periode_angsuran
+	--'Lancar' as Kolektabilitas
+	--sum(b.OutStandingPrincipal) AS outstanding_pembiayaan
+FROM
+	[m_PNM_DW_BRNet_LastGet_DW_202103_Final] a inner join
+	m_cessie b on a.LoanId=b.LoanId COLLATE DATABASE_DEFAULT
+WHERE
+	b.bank='7'
+	and b.keterangan = '141'
+	and b.os>0
+	and a.OSPokok>0
+	and a.Status='A'
+	and a.HariMenunggak < 30
+	and a.Nama!=''
+	and a.NoKTP!=''
+	and left(a.Produk,1)!='W'
+	and ISNUMERIC(a.NoKTP)=1 and LEN(a.NoKTP)=16
+	and a.TanggalJatuhTempo>= CONVERT(varchar,dateadd(d,-(day(getdate()-1)),getdate()),112)
+	--and a.TanggalOps>= dateadd(day,-5,GETDATE())
+	and (a.JangkaWaktu-((a.OSPokok/a.Plafond)*a.JangkaWaktu))>=1
+	
+ORDER BY	a.Cabang ASC

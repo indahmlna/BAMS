@@ -1,0 +1,56 @@
+--INSERT INTO INISEMENTARA.[dbo].m_cessie (
+--	Id,
+--	Bank,
+--	TanggalTarik,
+--	CabangId,
+--	NasabahId,
+--	LoanId,
+--	Siklus,
+--	TanggalPencairan,
+--	BatchLogId,
+--	os,
+--	loaniddisb,
+--	keterangan
+--)
+ SELECT
+	CAST (a.NasabahId AS VARCHAR(50)) + CONVERT (
+		VARCHAR (8),
+		a.TanggalPencairan,
+		112
+	) AS Id,
+	'7' AS Bank,
+	CONVERT(date, getdate()) AS TanggalTarik,
+	a.CabangId AS CabangId,
+	a.NasabahId AS NasabahId,
+	a.LoanId AS LoanId,
+	a.Siklus AS Siklus,
+	a.TanggalPencairan AS TanggalPencairan,
+	'2' AS BatchLogId,
+	a.OSPokok AS os,
+	CAST (a.LoanId AS VARCHAR(50)) + CONVERT (
+		VARCHAR (8),
+		a.TanggalPencairan,
+		112
+	) AS loaniddisb,
+	'141'
+FROM
+	m_PNM_DW_BRNet_LastGet_DW_202103_Final a 
+	
+WHERE
+	a.TanggalPencairan between '20201217'and '20201222'
+--	dateadd(day,-45,GETDATE())
+	AND a.Status= 'A' 
+	AND a.HariMenunggak< 30
+	--AND a.term=50
+	--and a.TanggalJatuhTempo>GETDATE()
+	and a.NoKTP!=''
+	and a.Nama !=''
+	and left(a.Produk,1)!='W'
+	--and a.TanggalOps> dateadd(day,-5,GETDATE())
+	and ISNUMERIC(a.NoKTP)=1 and LEN(a.NoKTP)=16
+	and (a.JangkaWaktu-((a.OSPokok/a.Plafond)*a.JangkaWaktu))>=1
+	
+and not exists (select loanid from INISEMENTARA.[dbo].m_cessie WHERE loanid=a.LoanId COLLATE DATABASE_DEFAULT 
+--and BatchLogId!=99 
+)	
+and not exists (select OurBranchID from INISEMENTARA.[dbo].m_sharia_convert WHERE OurBranchID=a.CabangId COLLATE DATABASE_DEFAULT)
